@@ -31,12 +31,13 @@ echo
 sleep 3
 echo
 
+path="/home/superlicker69/OS_Project"
 # Prompt for saving output
 while true; do
     read -p "Would you like to save the output? [Y/N] " output
     case "${output^^}" in
         Y)
-            read -p "Please enter the path to save the output (e.g., /path_to_save/LinuxAudit.txt): " path
+            # read -p "Please enter the path to save the output (e.g., /path_to_save/LinuxAudit.txt): " path
             echo "File will be saved to $path/LinuxAudit.txt"
             break
             ;;
@@ -92,7 +93,6 @@ perform_audit() {
     service --status-all | grep "+"
     echo "###############################################"
 
-    # TODO
     # Active Internet Connections and Open Ports
     echo -e "\e[0;33m 7. Active Internet Connections and Open Ports \e[0m"
     netstat -natp
@@ -111,10 +111,9 @@ perform_audit() {
     # TODO
     # Command History
     echo -e "\e[0;33m 10. Command History \e[0m"
-    history
+    cat ~/.bash_history
     echo "###############################################"
 
-    # TODO
     # Network Interfaces
     echo -e "\e[0;33m 11. Network Interfaces \e[0m"
     ifconfig -a
@@ -130,10 +129,9 @@ perform_audit() {
     ps -a
     echo "###############################################"
 
-    # TODO
     # SSH Configuration
     echo -e "\e[0;33m 14. SSH Configuration \e[0m"
-    cat /etc/ssh/sshd_config
+    sudo cat /etc/ssh/ssh_config
     echo "###############################################"
 
     # List Installed Packages
@@ -161,10 +159,9 @@ perform_audit() {
     apt-get check
     echo "###############################################"
 
-    # TODO
     # MOTD Banner Message
     echo -e "\e[0;33m 20. MOTD Banner Message \e[0m"
-    cat /etc/motd
+    cat /etc/update-motd.d/50-motd-news
     echo "###############################################"
 
     # List User Names
@@ -172,16 +169,21 @@ perform_audit() {
     cut -d: -f1 /etc/passwd
     echo "###############################################"
 
-    # TODO
     # Check for Null Passwords
     echo -e "\e[0;33m 22. Check for Null Passwords \e[0m"
-    users="$(cut -d: -f 1 /etc/passwd)"
+    users=$(cut -d: -f1 /etc/passwd)
+    found=false
     for x in $users; do
-        passwd -S $x | grep "NP"
+        if passwd -S $x | grep -q "NP"; then
+            echo "User $x has no password set."
+            found=true
+        fi
     done
+    if [ "$found" = false ]; then
+        echo "No users with null passwords found."
+    fi
     echo "###############################################"
 
-    # TODO
     # IP Routing Table
     echo -e "\e[0;33m 23. IP Routing Table \e[0m"
     route
@@ -210,10 +212,9 @@ perform_audit() {
     cat /etc/hosts.deny
     echo "###############################################"
 
-    # TODO
     # Failed Login Attempts
     echo -e "\e[0;33m 28. Failed Login Attempts \e[0m"
-    grep --color "failure" /var/log/auth.log
+    grep --color -i "failed" /var/log/auth.log
     echo "###############################################"
 }
 
